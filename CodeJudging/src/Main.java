@@ -17,7 +17,6 @@ public class Main {
 
         new MainWindow(address);
 
-
     }
 
 }

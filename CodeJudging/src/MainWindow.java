@@ -1,11 +1,17 @@
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -18,19 +24,24 @@ public class MainWindow extends Frame {
     private JTabbedPane tabs;
     private JComponent leaderboardPanel, actionsPanel;
     private JPanel problemAddPanel;
-    private JButton addProblemButton, selectInputButton, selectOutputButton;
+    private JButton addProblemButton, selectInputButton, selectOutputButton, removeProblemButton;
     private JLabel inputFileLabel, outputFileLabel;
+    private JTextField nameField;
+    private JList problemList;
     private JTable leaderboardTable;
     private JTabbedPane submissionPanel;
     private FileDialog fileChooser = new FileDialog(this);
     private final MainWindow window = this;
-    private String file = null;
+    private String inputFile = null, outputFile = null;
 
     private HashMap<String, ClientHandler> handlers = new HashMap<>();
     private HashMap<String, Integer> teamScores = new HashMap<>();
     private HashMap<String, Integer> teamPenalties = new HashMap<>();
     private HashMap<String, JTable> teamTables = new HashMap<>();
     private HashMap<String, File> teamFolders = new HashMap<>();
+
+    private HashMap<String, File> inputFiles = new HashMap<>();
+    private HashMap<String, File> outputFiles = new HashMap<>();
 
     private File source;
     private File problems;
@@ -70,30 +81,118 @@ public class MainWindow extends Frame {
         tabs.add("Leaderboard", leaderboardPanel);
 
         actionsPanel = new JPanel();
-        actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.PAGE_AXIS));
+        actionsPanel.setLayout(new BorderLayout());
 
         problemAddPanel = new JPanel();
         problemAddPanel.setLayout(new FlowLayout());
-        problemAddPanel.setPreferredSize(new Dimension(250, 50)); // TODO: FIX THE PROBLEM WITH DIMENSIONS OF THE PANEL
+        problemAddPanel.setPreferredSize(new Dimension(320, 120)); // TODO: FIX THE PROBLEM WITH DIMENSIONS OF THE PANEL
 
         inputFileLabel = new JLabel(" ");
-        inputFileLabel.setPreferredSize(new Dimension(100, 30));
+        inputFileLabel.setPreferredSize(new Dimension(150, 30));
+        inputFileLabel.setHorizontalAlignment(JLabel.CENTER);
         selectInputButton = new JButton("Select Input File");
-        selectInputButton.setPreferredSize(new Dimension(100, 30));
+        selectInputButton.setPreferredSize(new Dimension(150, 30));
+        selectInputButton.addActionListener(l -> {
+            fileChooser.setVisible(true);
+            String file = fileChooser.getFile();
+            String directory = fileChooser.getDirectory();
+            if (file != null && directory != null) {
+                inputFile = directory + "/" + file;
+                inputFileLabel.setText(file);
+            }
+        });
         outputFileLabel = new JLabel(" ");
-        outputFileLabel.setPreferredSize(new Dimension(100, 30));
+        outputFileLabel.setPreferredSize(new Dimension(150, 30));
+        outputFileLabel.setHorizontalAlignment(JLabel.CENTER);
         selectOutputButton = new JButton("Select Output File");
-        selectOutputButton.setPreferredSize(new Dimension(100, 30));
+        selectOutputButton.setPreferredSize(new Dimension(150, 30));
+        selectOutputButton.addActionListener(l -> {
+            fileChooser.setVisible(true);
+            String file = fileChooser.getFile();
+            String directory = fileChooser.getDirectory();
+            if (file != null && directory != null) {
+                outputFile = directory + "/" + file;
+                outputFileLabel.setText(file);
+            }
+        });
+
+        problemList = new JList(new DefaultListModel<>());
+        problemList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        problemList.setLayoutOrientation(JList.VERTICAL);
+
+        JScrollPane problemScroller = new JScrollPane(problemList);
+        problemScroller.setPreferredSize(new Dimension(300, 220));
+
+        removeProblemButton = new JButton("Remove Problem");
+        removeProblemButton.addActionListener(l -> {
+            if (problemList.getSelectedIndex() != -1) {
+                String problem = (String) problemList.getSelectedValue();
+                DefaultListModel m = (DefaultListModel) problemList.getModel();
+                m.removeElementAt(problemList.getSelectedIndex());
+                inputFiles.remove(problem).delete();
+                outputFiles.remove(problem).delete();
+                File folder = new File(problems.getPath() + "/" + problem);
+                folder.delete();
+                problemList.clearSelection();
+                problemList.setSelectedIndex(-1);
+            }
+        });
+
         addProblemButton = new JButton("Add Problem");
-        addProblemButton.setPreferredSize(new Dimension(100, 30));
+        addProblemButton.setPreferredSize(new Dimension(150, 30));
+        addProblemButton.addActionListener(l -> {
+            if (inputFile != null && outputFile != null && !inputFile.equals(outputFile) && !nameField.getText().trim().equals("")) {
+                String problemName = nameField.getText().trim();
+                if (!inputFiles.containsKey(problemName) && !outputFiles.containsKey(problemName)) {
+                    File problem = new File(problems.getPath() + "/" + problemName);
+                    if (!problem.mkdir()) {
+                        JOptionPane.showMessageDialog(window, "Unable to create problem folder!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        File iFile = new File(inputFile);
+                        File oFile = new File(outputFile);
+                        File problemInputFile = null, problemOutputFile = null;
+                        try {
+                            problemInputFile = Files.copy(iFile.toPath(), (new File(problem.getPath() + "/" + iFile.getName())).toPath()).toFile();
+                            problemOutputFile = Files.copy(oFile.toPath(), (new File(problem.getPath() + "/" + oFile.getName())).toPath()).toFile();
+                        } catch (IOException e) {
+                            JOptionPane.showMessageDialog(window, "An error occurred while copying files!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
+                        }
+                        if (problemInputFile != null && problemOutputFile != null) {
+                            inputFiles.put(problemName, problemInputFile);
+                            outputFiles.put(problemName, problemOutputFile);
+                            nameField.setText("");
+                            inputFile = null;
+                            outputFile = null;
+                            inputFileLabel.setText(" ");
+                            outputFileLabel.setText(" ");
+                            DefaultListModel m = (DefaultListModel) problemList.getModel();
+                            m.addElement(problemName);
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(window, "Unable to create problem.", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        JLabel nameLabel = new JLabel("Problem Name:");
+        nameLabel.setHorizontalAlignment(JLabel.CENTER);
+        nameLabel.setPreferredSize(new Dimension(150, 30));
+
+        nameField = new JTextField();
+        nameField.setPreferredSize(new Dimension(150, 30));
 
         problemAddPanel.add(inputFileLabel);
         problemAddPanel.add(selectInputButton);
         problemAddPanel.add(outputFileLabel);
         problemAddPanel.add(selectOutputButton);
+        problemAddPanel.add(nameLabel);
+        problemAddPanel.add(nameField);
         problemAddPanel.add(addProblemButton);
+        problemAddPanel.add(problemScroller);
+        problemAddPanel.add(removeProblemButton);
 
-        actionsPanel.add(problemAddPanel);
+        actionsPanel.add(problemAddPanel, BorderLayout.LINE_START);
 
         tabs.add("Actions", actionsPanel);
 
@@ -146,7 +245,6 @@ public class MainWindow extends Frame {
         }
         return false;
     }
-
 
     public void updateAll() {
 
