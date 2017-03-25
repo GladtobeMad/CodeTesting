@@ -108,7 +108,7 @@ public class MainWindow extends Frame {
             model.addColumn("Status");
             model.addColumn("Test");
             JTable teamTable = new JTable(model);
-            teamTable.getColumn("Test").setCellRenderer(new ButtonRenderer());  // TODO: FIGURE THIS OUT
+            teamTable.getColumn("Test").setCellRenderer(new ButtonRenderer());
             teamTable.addMouseListener(new JTableButtonMouseListener(teamTable));
             teamTable.setEnabled(false); // TODO: DEAL WITH THIS
             teamTable.getTableHeader().setEnabled(false);
