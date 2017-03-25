@@ -74,7 +74,7 @@ public class MainWindow extends Frame {
 
         problemAddPanel = new JPanel();
         problemAddPanel.setLayout(new FlowLayout());
-        problemAddPanel.setPreferredSize(new Dimension(250, 50)); // TODO: FIX THE PROBLEM WITH THE DIMENSIONS OF THE PANEL
+        problemAddPanel.setPreferredSize(new Dimension(250, 50)); // TODO: FIX THE PROBLEM WITH DIMENSIONS OF THE PANEL
 
         inputFileLabel = new JLabel(" ");
         inputFileLabel.setPreferredSize(new Dimension(100, 30));
