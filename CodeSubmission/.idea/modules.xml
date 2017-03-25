@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/testing/CodeJudging/CodeJudging.iml" filepath="$USER_HOME$/testing/CodeJudging/CodeJudging.iml" />
-      <module fileurl="file://$USER_HOME$/CodeJudging/CodeJudging.iml" filepath="$USER_HOME$/CodeJudging/CodeJudging.iml" />
-      <module fileurl="file://$USER_HOME$/CodeJudging/CodeJudging1.iml" filepath="$USER_HOME$/CodeJudging/CodeJudging1.iml" />
-      <module fileurl="file://$USER_HOME$/CodeJudging/CodeJudging2.iml" filepath="$USER_HOME$/CodeJudging/CodeJudging2.iml" />
-      <module fileurl="file://$USER_HOME$/testing/CodeSubmission/CodeSubmission.iml" filepath="$USER_HOME$/testing/CodeSubmission/CodeSubmission.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CodeJudging/CodeJudging.iml" filepath="$PROJECT_DIR$/../CodeJudging/CodeJudging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CodeSubmission.iml" filepath="$PROJECT_DIR$/CodeSubmission.iml" />
     </modules>
   </component>
 </project>
