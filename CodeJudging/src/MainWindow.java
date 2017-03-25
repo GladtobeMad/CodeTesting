@@ -2,10 +2,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -111,8 +108,8 @@ public class MainWindow extends Frame {
             model.addColumn("Status");
             model.addColumn("Test");
             JTable teamTable = new JTable(model);
-            //teamTable.getColumn("Test").setCellRenderer(new ButtonRenderer());  // TODO: FIGURE THIS OUT
-            //teamTable.getColumn("Test").setCellEditor(new ButtonEditor(new JCheckBox()));
+            teamTable.getColumn("Test").setCellRenderer(new ButtonRenderer());  // TODO: FIGURE THIS OUT
+            teamTable.addMouseListener(new JTableButtonMouseListener(teamTable));
             teamTable.setEnabled(false); // TODO: DEAL WITH THIS
             teamTable.getTableHeader().setEnabled(false);
             JComponent teamPanel = new JScrollPane(teamTable);
@@ -192,20 +189,25 @@ public class MainWindow extends Frame {
         return teamFolders.get(team);
     }
 
-    public void addTeamSubmission(String team, String name, long id, String status) {
+    public void addTeamSubmission(String team, File file, long id, String status) {
         DefaultTableModel model = (DefaultTableModel) teamTables.get(team).getModel();
         String time = new SimpleDateFormat("h:mm a").format(new Timestamp(id));
-        model.insertRow(0, new Object[]{name, time, status, "Test"});
+        model.insertRow(0, new Object[]{file.getName(), time, status, "Test"});
+        JButton button = new JButton("Test");
+        button.addActionListener(l -> {
+            new CodeTestingWindow(file, window);
+            this.setEnabled(false);
+        });
+        model.setValueAt(button, 0, 3);
     }
 
-    private class ButtonRenderer extends JButton implements TableCellRenderer {
+    private static class ButtonRenderer extends JButton implements TableCellRenderer {
 
         public ButtonRenderer() {
             setOpaque(true);
         }
 
-        public JComponent getTableCellRendererComponent(JTable table, Object value,
-                                                        boolean isSelected, boolean hasFocus, int row, int column) {
+        public JComponent getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (isSelected) {
                 setForeground(table.getSelectionForeground());
                 setBackground(table.getSelectionBackground());
@@ -213,64 +215,34 @@ public class MainWindow extends Frame {
                 setForeground(table.getForeground());
                 setBackground(UIManager.getColor("Button.background"));
             }
-            setText((value == null) ? "" : value.toString());
+            if (value instanceof JButton) {
+                setText(((JButton) value).getText());
+            } else {
+                setText((value == null) ? "" : value.toString());
+            }
             return this;
         }
     }
 
-    private class ButtonEditor extends DefaultCellEditor {
-        protected JButton button;
 
-        private String label;
+    private static class JTableButtonMouseListener extends MouseAdapter {
+        private final JTable table;
 
-        private boolean isPushed;
+        public JTableButtonMouseListener(JTable table) {
+            this.table = table;
+        }
 
-        public ButtonEditor(JCheckBox checkBox) {
-            super(checkBox);
-            button = new JButton();
-            button.setOpaque(true);
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
+        public void mouseClicked(MouseEvent e) {
+            int column = table.getColumnModel().getColumnIndexAtX(e.getX());
+            int row    = e.getY()/table.getRowHeight();
+
+            if (row < table.getRowCount() && row >= 0 && column < table.getColumnCount() && column >= 0) {
+                Object value = table.getValueAt(row, column);
+                if (value instanceof JButton) {
+                    ((JButton)value).doClick();
                 }
-            });
-        }
-
-        public JComponent getTableCellEditorComponent(JTable table, Object value,
-                                                      boolean isSelected, int row, int column) {
-            if (isSelected) {
-                button.setForeground(table.getSelectionForeground());
-                button.setBackground(table.getSelectionBackground());
-            } else {
-                button.setForeground(table.getForeground());
-                button.setBackground(table.getBackground());
             }
-            label = (value == null) ? "" : value.toString();
-            button.setText(label);
-            isPushed = true;
-            return button;
-        }
-
-        public Object getCellEditorValue() {
-            if (isPushed) {
-                //
-                //
-                JOptionPane.showMessageDialog(button, label + ": Ouch!");
-                // System.out.println(label + ": Ouch!");
-            }
-            isPushed = false;
-            return new String(label);
-        }
-
-        public boolean stopCellEditing() {
-            isPushed = false;
-            return super.stopCellEditing();
-        }
-
-        protected void fireEditingStopped() {
-            super.fireEditingStopped();
         }
     }
-
 
 }

@@ -57,7 +57,6 @@ public class ClientHandler implements Runnable {
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("SENDFILE ")) {
-                    System.out.println("RECEIVING FILE");
                     line = line.substring(9);
                     Scanner read = new Scanner(line);
                     String filename = read.next();
@@ -73,7 +72,7 @@ public class ClientHandler implements Runnable {
                             output.println(in.readLine());
                         }
                         output.flush();
-                        fileSubmission(filename, id, "Being Judged");
+                        fileSubmission(file, id, "Being Judged");
                     } else {
                         System.out.println("Unable to create file.");
                     }
@@ -101,12 +100,12 @@ public class ClientHandler implements Runnable {
         out.flush();
     }
 
-    public void fileSubmission(String name, long id, String status) {
-        submissionFiles.put(id, name);
+    public void fileSubmission(File file, long id, String status) {
+        submissionFiles.put(id, file.getName());
         submissionStatuses.put(id, status);
-        out.println("FILESUBMISSION " + name + " " + id);
+        out.println("FILESUBMISSION " + file.getName() + " " + id);
         out.println(status);
-        window.addTeamSubmission(this.teamName, name, id, status); // TODO: DEAL WITH THIS
+        window.addTeamSubmission(this.teamName, file, id, status); // TODO: DEAL WITH THIS
         out.flush();
     }
 
