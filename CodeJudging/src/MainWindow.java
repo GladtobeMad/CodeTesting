@@ -82,6 +82,15 @@ public class MainWindow extends Frame {
 
         actionsPanel = new JPanel();
         actionsPanel.setLayout(new BorderLayout());
+        actionsPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                    problemList.setSelectedIndex(-1);
+                    problemList.clearSelection();
+                    actionsPanel.requestFocus();
+            }
+        });
+
 
         problemAddPanel = new JPanel();
         problemAddPanel.setLayout(new FlowLayout());
@@ -141,36 +150,43 @@ public class MainWindow extends Frame {
         addProblemButton = new JButton("Add Problem");
         addProblemButton.setPreferredSize(new Dimension(150, 30));
         addProblemButton.addActionListener(l -> {
-            if (inputFile != null && outputFile != null && !inputFile.equals(outputFile) && !nameField.getText().trim().equals("")) {
+            if (inputFile != null && outputFile != null && !nameField.getText().trim().equals("")) {
                 String problemName = nameField.getText().trim();
                 if (!inputFiles.containsKey(problemName) && !outputFiles.containsKey(problemName)) {
-                    File problem = new File(problems.getPath() + "/" + problemName);
-                    if (!problem.mkdir()) {
-                        JOptionPane.showMessageDialog(window, "Unable to create problem folder!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
+                    File iFile = new File(inputFile);
+                    File oFile = new File(outputFile);
+                    if (!iFile.getName().equals(oFile.getName())) {
+                        File problem = new File(problems.getPath() + "/" + problemName);
+                        if (problem.exists()) {
+                            deleteFolder(problem);
+                        }
+                        if (!problem.mkdir()) {
+                            JOptionPane.showMessageDialog(window, "Unable to create problem folder!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            File problemInputFile = null, problemOutputFile = null;
+                            try {
+                                problemInputFile = Files.copy(iFile.toPath(), (new File(problem.getPath() + "/" + iFile.getName())).toPath()).toFile();
+                                problemOutputFile = Files.copy(oFile.toPath(), (new File(problem.getPath() + "/" + oFile.getName())).toPath()).toFile();
+                            } catch (IOException e) {
+                                JOptionPane.showMessageDialog(window, "An error occurred while copying files!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
+                            }
+                            if (problemInputFile != null && problemOutputFile != null) {
+                                inputFiles.put(problemName, problemInputFile);
+                                outputFiles.put(problemName, problemOutputFile);
+                                nameField.setText("");
+                                inputFile = null;
+                                outputFile = null;
+                                inputFileLabel.setText(" ");
+                                outputFileLabel.setText(" ");
+                                DefaultListModel m = (DefaultListModel) problemList.getModel();
+                                m.addElement(problemName);
+                            }
+                        }
                     } else {
-                        File iFile = new File(inputFile);
-                        File oFile = new File(outputFile);
-                        File problemInputFile = null, problemOutputFile = null;
-                        try {
-                            problemInputFile = Files.copy(iFile.toPath(), (new File(problem.getPath() + "/" + iFile.getName())).toPath()).toFile();
-                            problemOutputFile = Files.copy(oFile.toPath(), (new File(problem.getPath() + "/" + oFile.getName())).toPath()).toFile();
-                        } catch (IOException e) {
-                            JOptionPane.showMessageDialog(window, "An error occurred while copying files!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
-                        }
-                        if (problemInputFile != null && problemOutputFile != null) {
-                            inputFiles.put(problemName, problemInputFile);
-                            outputFiles.put(problemName, problemOutputFile);
-                            nameField.setText("");
-                            inputFile = null;
-                            outputFile = null;
-                            inputFileLabel.setText(" ");
-                            outputFileLabel.setText(" ");
-                            DefaultListModel m = (DefaultListModel) problemList.getModel();
-                            m.addElement(problemName);
-                        }
+                        JOptionPane.showMessageDialog(window, "Input file and output file can't have the same name!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(window, "Unable to create problem.", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(window, "Problem " + problemName + " already exists!", "Error creating a problem", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -313,6 +329,20 @@ public class MainWindow extends Frame {
             this.setEnabled(false);
         });
         model.setValueAt(button, 0, 3);
+    }
+
+    public static void deleteFolder(File folder) {
+        File[] files = folder.listFiles();
+        if(files != null) {
+            for(File f: files) {
+                if(f.isDirectory()) {
+                    deleteFolder(f);
+                } else {
+                    f.delete();
+                }
+            }
+        }
+        folder.delete();
     }
 
     private static class ButtonRenderer extends JButton implements TableCellRenderer {
