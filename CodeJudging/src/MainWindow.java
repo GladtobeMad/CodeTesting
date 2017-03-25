@@ -17,6 +17,9 @@ public class MainWindow extends Frame {
 
     private JTabbedPane tabs;
     private JComponent leaderboardPanel, actionsPanel;
+    private JPanel problemAddPanel;
+    private JButton addProblemButton, selectInputButton, selectOutputButton;
+    private JLabel inputFileLabel, outputFileLabel;
     private JTable leaderboardTable;
     private JTabbedPane submissionPanel;
     private FileDialog fileChooser = new FileDialog(this);
@@ -35,24 +38,12 @@ public class MainWindow extends Frame {
     MainWindow(InetAddress address) {
         super("Code Judging (" + address.getHostAddress() + ")");
 
-        Server server = new Server(window);
+        new Server(window);
 
         tabs = new JTabbedPane();
 
         submissionPanel = new JTabbedPane();
         tabs.add("Submissions", submissionPanel);
-
-        /*
-        DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("Submission Name");
-        model.addColumn("Submission Time");
-        model.addColumn("Status");
-        runsTable = new JTable(model);
-        runsTable.setEnabled(false);
-        runsTable.getTableHeader().setEnabled(false);
-        runsPanel = new JScrollPane(runsTable);
-        tabs.add("Submissions", runsPanel);
-        */
 
         try {
             source = new File (MainWindow.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath() + "/Judging_Session_" + System.currentTimeMillis());
@@ -79,6 +70,31 @@ public class MainWindow extends Frame {
         tabs.add("Leaderboard", leaderboardPanel);
 
         actionsPanel = new JPanel();
+        actionsPanel.setLayout(new BoxLayout(actionsPanel, BoxLayout.PAGE_AXIS));
+
+        problemAddPanel = new JPanel();
+        problemAddPanel.setLayout(new FlowLayout());
+        problemAddPanel.setPreferredSize(new Dimension(250, 50)); // TODO: FIX THE PROBLEM WITH THE DIMENSIONS OF THE PANEL
+
+        inputFileLabel = new JLabel(" ");
+        inputFileLabel.setPreferredSize(new Dimension(100, 30));
+        selectInputButton = new JButton("Select Input File");
+        selectInputButton.setPreferredSize(new Dimension(100, 30));
+        outputFileLabel = new JLabel(" ");
+        outputFileLabel.setPreferredSize(new Dimension(100, 30));
+        selectOutputButton = new JButton("Select Output File");
+        selectOutputButton.setPreferredSize(new Dimension(100, 30));
+        addProblemButton = new JButton("Add Problem");
+        addProblemButton.setPreferredSize(new Dimension(100, 30));
+
+        problemAddPanel.add(inputFileLabel);
+        problemAddPanel.add(selectInputButton);
+        problemAddPanel.add(outputFileLabel);
+        problemAddPanel.add(selectOutputButton);
+        problemAddPanel.add(addProblemButton);
+
+        actionsPanel.add(problemAddPanel);
+
         tabs.add("Actions", actionsPanel);
 
         this.add(tabs);
@@ -110,7 +126,7 @@ public class MainWindow extends Frame {
             JTable teamTable = new JTable(model);
             teamTable.getColumn("Test").setCellRenderer(new ButtonRenderer());
             teamTable.addMouseListener(new JTableButtonMouseListener(teamTable));
-            teamTable.setEnabled(false); // TODO: DEAL WITH THIS
+            teamTable.setEnabled(false);
             teamTable.getTableHeader().setEnabled(false);
             JComponent teamPanel = new JScrollPane(teamTable);
             tabs.add("Submissions", teamPanel);
