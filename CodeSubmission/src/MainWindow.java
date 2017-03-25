@@ -6,6 +6,7 @@ import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.Socket;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 /**
  * Created by VladOleksenko on 3/17/17.
@@ -165,7 +166,7 @@ public class MainWindow extends Frame {
 
     public void updateSubmission(String name, long id, String status) {
         DefaultTableModel model = (DefaultTableModel) runsTable.getModel();
-        String time = new Timestamp(id).getHours()%12 + ":" + new Timestamp(id).getMinutes() + ((new Timestamp(id).getHours()/12 > 0)?" PM":" AM");
+        String time = new SimpleDateFormat("h:mm a").format(new Timestamp(id));
         model.insertRow(0, new Object[]{name, time, status});
     }
 }

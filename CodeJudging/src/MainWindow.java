@@ -7,6 +7,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 /**
@@ -188,8 +189,8 @@ public class MainWindow extends Frame {
 
     public void addTeamSubmission(String team, String name, long id, String status) {
         DefaultTableModel model = (DefaultTableModel) teamTables.get(team).getModel();
-        String time = new Timestamp(id).getHours()%12 + ":" + new Timestamp(id).getMinutes() + ((new Timestamp(id).getHours()/12 > 0)?" PM":" AM");
-        model.addRow(new Object[]{name, time, status, new JButton("Test")}); // TODO: FIX THIS
+        String time = new SimpleDateFormat("h:mm a").format(new Timestamp(id));
+        model.addRow(new Object[]{name, time, status, new JButton("Test")});
     }
 
 }
