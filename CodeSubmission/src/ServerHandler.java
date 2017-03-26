@@ -49,6 +49,10 @@ public class ServerHandler implements Runnable {
                     long id = read.nextLong();
                     String status = in.readLine();
                     window.updateSubmission(id, status);
+                } else if (line.equals("STARTSESSION")) {
+                    window.startSession();
+                } else if (line.equals("ENDSESSION")) {
+                    window.endSession();
                 }
             }
 

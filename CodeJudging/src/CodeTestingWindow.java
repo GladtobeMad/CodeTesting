@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -109,6 +108,37 @@ public class CodeTestingWindow extends JFrame {
         finishButton.addActionListener(l -> {
             if (resultComboBox.getSelectedItem() != "") {
                 window.getTeamHandler(teamName).fileUpdate((String) resultComboBox.getSelectedItem(), id);
+                int penalty = 0;
+                int solved = 0;
+                String problemName = (String) problemComboBox.getSelectedItem();
+                if (window.getProblemPenalties(teamName) != null) {
+                    if (window.getProblemPenalties(teamName).containsKey(problemName)) {
+                        penalty = window.getProblemPenalties(teamName).get(problemName);
+                    }
+                }
+                if (window.getProblemScores(teamName) != null) {
+                    if (window.getProblemScores(teamName).containsKey(problemName)) {
+                        solved = window.getProblemScores(teamName).get(problemName);
+                    }
+                }
+
+                if (resultComboBox.getSelectedItem().equals("Correct")) {
+                    if (solved == 0) {
+                        penalty+=20;
+                        solved = 1;
+                        penalty += ((id - window.getBeginTime())/1000);
+                        window.setProblemScore(teamName, problemName, solved);
+                        window.setProblemPenalty(teamName, problemName, penalty);
+                        window.addTeamScore(teamName, solved);
+                        window.addTeamPenalty(teamName, penalty);
+                    } else {
+                        window.setProblemPenalty(teamName, problemName, penalty + 20);
+                        window.addTeamPenalty(teamName, 20);
+                    }
+                } else {
+                    penalty += 20;
+                    window.setProblemPenalty(teamName, problemName, penalty);
+                }
                 dispose();
                 window.setEnabled(true);
             }
@@ -137,5 +167,7 @@ public class CodeTestingWindow extends JFrame {
             }
         });
     }
+
+
 
 }

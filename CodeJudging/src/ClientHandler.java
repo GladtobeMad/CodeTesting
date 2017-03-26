@@ -56,6 +56,10 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
+            if (window.started()) {
+                startSession();
+            }
+
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.startsWith("SENDFILE ")) {
@@ -127,6 +131,16 @@ public class ClientHandler implements Runnable {
 
     public String getTeamName() {
         return teamName;
+    }
+
+    public void startSession() {
+        out.println("STARTSESSION");
+        out.flush();
+    }
+
+    public void endSession() {
+        out.println("ENDSESSION");
+        out.flush();
     }
 
 }

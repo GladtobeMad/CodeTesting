@@ -88,6 +88,8 @@ public class MainWindow extends Frame {
                 submitFileButton.setEnabled(true);
             }
         });
+        chooseFileButton.setEnabled(false);
+
         submitFileButton.setEnabled(false);
         submitFileButton.addActionListener(e -> {
             if (file != null) {
@@ -180,5 +182,14 @@ public class MainWindow extends Frame {
             DefaultTableModel model = (DefaultTableModel) runsTable.getModel();
             model.setValueAt(status, index, 2);
         }
+    }
+
+    public void startSession() {
+        chooseFileButton.setEnabled(true);
+    }
+
+    public void endSession() {
+        chooseFileButton.setEnabled(false);
+        submitFileButton.setEnabled(false);
     }
 }

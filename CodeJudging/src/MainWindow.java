@@ -46,6 +46,9 @@ public class MainWindow extends Frame {
     private HashMap<String, Integer> teamPenalties = new HashMap<>();
     private HashMap<String, JTable> teamTables = new HashMap<>();
     private HashMap<String, File> teamFolders = new HashMap<>();
+    private HashMap<String, HashMap<String, Integer>> teamProblemScores = new HashMap<>();
+    private HashMap<String, HashMap<String, Integer>> teamProblemPenalties = new HashMap<>();
+
 
     private HashMap<String, File> inputFiles = new HashMap<>();
     private HashMap<String, File> outputFiles = new HashMap<>();
@@ -246,7 +249,6 @@ public class MainWindow extends Frame {
         timeLabel.setFont(new Font(timeLabel.getFont().getName(), Font.PLAIN, 48));
 
 
-
         buttonsPanel.add(timeLabel);
         time = 0;
 
@@ -264,14 +266,22 @@ public class MainWindow extends Frame {
             timeLabel.setText(String.format("%d:%02d", time/60, time%60));
             timer.start();
             startButton.setEnabled(false);
+            for (ClientHandler handler : handlers.values()) {
+                handler.startSession();
+            }
+            endButton.setEnabled(true);
         });
         endButton = new JButton("End");
         endButton.setPreferredSize(new Dimension(120, 30));
         endButton.addActionListener(l -> {
             timer.stop();
+            time = 0;
             endButton.setEnabled(false);
-            // TODO: INFORM CLIENTS ABOUT END
+            for (ClientHandler handler : handlers.values()) {
+                handler.endSession();
+            }
         });
+        endButton.setEnabled(false);
         JPanel twoButtonsPanel = new JPanel();
         twoButtonsPanel.setPreferredSize(new Dimension(320, 40));
         twoButtonsPanel.setLayout(new FlowLayout());
@@ -500,6 +510,64 @@ public class MainWindow extends Frame {
         return teamSubmissionIds.get(team).indexOf(id);
     }
 
+    public HashMap<String, Integer> getProblemPenalties(String team) {
+        return teamProblemPenalties.get(team);
+    }
 
+    public HashMap<String, Integer> getProblemScores(String team) {
+        return teamProblemScores.get(team);
+    }
+
+    public void setProblemScore(String team, String problem, int score) {
+        if (!teamProblemScores.containsKey(team)) {
+            HashMap<String, Integer> toAdd = new HashMap<>();
+            toAdd.put(problem, score);
+            teamProblemScores.put(team, toAdd);
+        } else {
+            HashMap<String, Integer> toAdd = teamProblemScores.get(team);
+            if (toAdd.containsKey(problem)) {
+                toAdd.replace(problem, score);
+            } else {
+                toAdd.put(problem, score);
+            }
+            teamProblemScores.replace(team, toAdd);
+        }
+    }
+
+    public void setProblemPenalty(String team, String problem, int penalty) {
+        if (!teamProblemPenalties.containsKey(team)) {
+            HashMap<String, Integer> toAdd = new HashMap<>();
+            toAdd.put(problem, penalty);
+            teamProblemPenalties.put(team, toAdd);
+        } else {
+            HashMap<String, Integer> toAdd = teamProblemPenalties.get(team);
+            if (toAdd.containsKey(problem)) {
+                toAdd.replace(problem, penalty);
+            } else {
+                toAdd.put(problem, penalty);
+            }
+            teamProblemPenalties.replace(team, toAdd);
+        }
+    }
+
+    public void addTeamPenalty(String team, int p) {
+        int penalty = teamPenalties.get(team) + p;
+        teamPenalties.replace(team, penalty);
+        updateAll();
+    }
+
+    public void addTeamScore(String team, int s) {
+        int score = teamScores.get(team) + s;
+        teamScores.replace(team, score);
+        updateAll();
+    }
+
+    public long getBeginTime() {
+        return beginTime;
+    }
+
+    public boolean started() {
+        return time != 0;
+    }
 
 }
