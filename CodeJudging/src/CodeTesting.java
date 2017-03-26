@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class CodeTesting {
 
     private File toTest, input, output;
-    private boolean compileError, timeoutError;
+    private boolean compileError, timeoutError, runtimeError;
     private long timeout;
 
     CodeTesting (File toTest, File input, File output, long timeout) {
@@ -74,7 +74,7 @@ public class CodeTesting {
                         while ((line = errorReader.readLine()) != null) {
                             stringWriter.write(line + "\n");
                             stringWriter.flush();
-                            compileError = true;
+                            runtimeError = true;
                         }
                         errorReader.close();
                     } catch (IOException e) {
@@ -129,6 +129,8 @@ public class CodeTesting {
                 printWriter.println("The program resulted in a compile error.");
             } else if (timeoutError) {
                 printWriter.println("The program resulted in a timeout error.");
+            } else if (runtimeError) {
+                printWriter.println("The program resulted in a runtime error.");
             } else {
                 printWriter.println("There was a total of " + errorCount + " errors.");
             }
