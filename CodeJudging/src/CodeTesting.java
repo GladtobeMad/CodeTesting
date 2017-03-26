@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class CodeTesting {
 
     private File toTest, input, output;
+    private boolean compileError;
 
     CodeTesting (File toTest, File input, File output) {
         this.toTest = toTest;
@@ -21,15 +22,15 @@ public class CodeTesting {
 
     public String test() { // TODO: IMPROVE THIS. MAKE IT MORE INTERACTIVE
         StringWriter write = new StringWriter();
-        PrintWriter printWriter = new PrintWriter(write); // TODO: CHECK IF THIS ACTUALLY WORKS
-        boolean compileError = false;
+        PrintWriter printWriter = new PrintWriter(write);
+        compileError = false;
         try {
-            Process pro1 = Runtime.getRuntime().exec("javac " + toTest.getName());
+            Process pro1 = Runtime.getRuntime().exec("javac " + toTest.getPath());
             BufferedReader errorReader1 = new BufferedReader(new InputStreamReader(pro1.getErrorStream()));
             String line;
             try {
                 while ((line = errorReader1.readLine()) != null) {
-                    printWriter.println(line); // TODO: IF ERROR IS PRODUCED THEN COMPILE ERROR
+                    printWriter.println(line);
                     compileError = true;
                 }
                 errorReader1.close();
@@ -38,7 +39,7 @@ public class CodeTesting {
             }
             pro1.waitFor();
 
-            Process pro2 = Runtime.getRuntime().exec("java " + toTest.getName().substring(0, toTest.getName().length()-5)); // Removes the .java extension
+            Process pro2 = Runtime.getRuntime().exec("java -cp " + toTest.getParent() + " " + toTest.getName().substring(0, toTest.getName().length()-5)); // Removes the .java extension
 
             BufferedReader outputReader = new BufferedReader(new InputStreamReader(pro2.getInputStream()));
             BufferedReader errorReader = new BufferedReader(new InputStreamReader(pro2.getErrorStream()));
@@ -71,6 +72,7 @@ public class CodeTesting {
                         while ((line = errorReader.readLine()) != null) {
                             stringWriter.write(line + "\n");
                             stringWriter.flush();
+                            compileError = true;
                         }
                         errorReader.close();
                     } catch (IOException e) {

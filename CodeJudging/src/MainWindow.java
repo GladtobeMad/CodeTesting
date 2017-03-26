@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -94,7 +95,7 @@ public class MainWindow extends Frame {
 
         problemAddPanel = new JPanel();
         problemAddPanel.setLayout(new FlowLayout());
-        problemAddPanel.setPreferredSize(new Dimension(320, 120)); // TODO: FIX THE PROBLEM WITH DIMENSIONS OF THE PANEL
+        problemAddPanel.setPreferredSize(new Dimension(320, 120));
 
         inputFileLabel = new JLabel(" ");
         inputFileLabel.setPreferredSize(new Dimension(150, 30));
@@ -227,6 +228,23 @@ public class MainWindow extends Frame {
         });
     }
 
+    public ArrayList<String> getProblemList() {
+        ArrayList<String> toReturn = new ArrayList<>();
+        for (int i = 0; i < problemList.getModel().getSize(); i++) {
+            toReturn.add((String) problemList.getModel().getElementAt(i));
+        }
+        return toReturn;
+    }
+
+    public File getInputFile(String problem) {
+        return inputFiles.get(problem);
+    }
+
+    public File getOutputFile(String problem) {
+        return outputFiles.get(problem);
+    }
+
+
     public boolean addTeam(String name, ClientHandler handler) {
         if (!teamScores.containsKey(name) && !teamPenalties.containsKey(name) && !name.contains(" ")) {
             teamScores.put(name, 0);
@@ -307,14 +325,6 @@ public class MainWindow extends Frame {
         }
     }
 
-    public File getSource() {
-        return source;
-    }
-
-    public File getProblems() {
-        return problems;
-    }
-
     public File getTeamFolder(String team) {
         return teamFolders.get(team);
     }
@@ -325,8 +335,12 @@ public class MainWindow extends Frame {
         model.insertRow(0, new Object[]{file.getName(), time, status, "Test"});
         JButton button = new JButton("Test");
         button.addActionListener(l -> {
-            new CodeTestingWindow(file, window);
-            this.setEnabled(false);
+            if (this.getProblemList().size() > 0) {
+                new CodeTestingWindow(file, window);
+                this.setEnabled(false);
+            } else {
+                JOptionPane.showMessageDialog(window, "Problem list is empty!", "Unable to test code", JOptionPane.ERROR_MESSAGE);
+            }
         });
         model.setValueAt(button, 0, 3);
     }
@@ -367,7 +381,6 @@ public class MainWindow extends Frame {
             return this;
         }
     }
-
 
     private static class JTableButtonMouseListener extends MouseAdapter {
         private final JTable table;
