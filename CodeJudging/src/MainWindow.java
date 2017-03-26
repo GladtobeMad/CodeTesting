@@ -44,6 +44,8 @@ public class MainWindow extends Frame {
     private HashMap<String, File> inputFiles = new HashMap<>();
     private HashMap<String, File> outputFiles = new HashMap<>();
 
+    private HashMap<String, ArrayList<Long>> teamSubmissionIds = new HashMap<>();
+
     private File source;
     private File problems;
 
@@ -250,6 +252,7 @@ public class MainWindow extends Frame {
             teamScores.put(name, 0);
             teamPenalties.put(name, 0);
             handlers.put(name, handler);
+            teamSubmissionIds.put(name, new ArrayList<>());
 
             DefaultTableModel model = new DefaultTableModel();
             model.addColumn("Submission Name");
@@ -329,15 +332,26 @@ public class MainWindow extends Frame {
         return teamFolders.get(team);
     }
 
+    public JTable getTeamTable(String team) {
+        return teamTables.get(team);
+    }
+
+    public ClientHandler getTeamHandler(String team) {
+        return handlers.get(team);
+    }
+
     public void addTeamSubmission(String team, File file, long id, String status) {
         DefaultTableModel model = (DefaultTableModel) teamTables.get(team).getModel();
         String time = new SimpleDateFormat("h:mm a").format(new Timestamp(id));
         model.insertRow(0, new Object[]{file.getName(), time, status, "Test"});
+        ArrayList<Long> list = teamSubmissionIds.get(team);
+        list.add(0, id);
+        teamSubmissionIds.replace(team, list);
         JButton button = new JButton("Test");
         //idToButton.put(id, button);
         button.addActionListener(l -> {
             if (this.getProblemList().size() > 0) {
-                new CodeTestingWindow(file, window, button);
+                new CodeTestingWindow(file, window, id, team);
                 this.setEnabled(false);
             } else {
                 JOptionPane.showMessageDialog(window, "Problem list is empty!", "Unable to test code", JOptionPane.ERROR_MESSAGE);
@@ -403,5 +417,8 @@ public class MainWindow extends Frame {
         }
     }
 
+    public int getTeamRowIndex(String team, long id) {
+        return teamSubmissionIds.get(team).indexOf(id);
+    }
 
 }

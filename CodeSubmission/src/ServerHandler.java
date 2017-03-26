@@ -43,7 +43,12 @@ public class ServerHandler implements Runnable {
                     String name = read.next();
                     long id = read.nextLong();
                     String status = in.readLine();
-                    window.updateSubmission(name, id, status);
+                    window.addSubmission(name, id, status);
+                } else if (line.startsWith("FILEUPDATE ")) {
+                    Scanner read = new Scanner(line.substring(11));
+                    long id = read.nextLong();
+                    String status = in.readLine();
+                    window.updateSubmission(id, status);
                 }
             }
 

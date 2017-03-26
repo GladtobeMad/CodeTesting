@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.Socket;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 /**
  * Created by VladOleksenko on 3/17/17.
@@ -25,6 +26,7 @@ public class MainWindow extends Frame {
     private JTextField ipField, teamNameField;
     private JButton connectButton;
     private ServerHandler handler;
+    private ArrayList<Long> submissionIds = new ArrayList<>();
 
 
     public MainWindow() {
@@ -164,9 +166,18 @@ public class MainWindow extends Frame {
 
     }
 
-    public void updateSubmission(String name, long id, String status) {
+    public void addSubmission(String name, long id, String status) {
         DefaultTableModel model = (DefaultTableModel) runsTable.getModel();
         String time = new SimpleDateFormat("h:mm a").format(new Timestamp(id));
         model.insertRow(0, new Object[]{name, time, status});
+        submissionIds.add(0, id);
+    }
+
+    public void updateSubmission(long id, String status) {
+        int index = submissionIds.indexOf(id);
+        if (index != -1) {
+            DefaultTableModel model = (DefaultTableModel) runsTable.getModel();
+            model.setValueAt(status, index, 2);
+        }
     }
 }

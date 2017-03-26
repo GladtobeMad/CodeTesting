@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -11,7 +12,8 @@ public class CodeTestingWindow extends JFrame {
 
     private File toTest;
     private MainWindow window;
-    private JButton button;
+    private long id;
+    private String teamName;
 
     private JTextField timeoutField;
     private JComboBox problemComboBox, resultComboBox;
@@ -20,13 +22,14 @@ public class CodeTestingWindow extends JFrame {
 
 
 
-    CodeTestingWindow(File test, MainWindow w, JButton b) {
+    CodeTestingWindow(File test, MainWindow w, long i, String name) {
 
         super ("Testing file " + test.getName());
 
         this.toTest = test;
         this.window = w;
-        this.button = b;
+        this.id = i;
+        this.teamName = name;
 
         this.setLayout(new BorderLayout());
         JPanel panel = new JPanel();
@@ -105,7 +108,7 @@ public class CodeTestingWindow extends JFrame {
         finishButton.setPreferredSize(new Dimension(150, 30));
         finishButton.addActionListener(l -> {
             if (resultComboBox.getSelectedItem() != "") {
-                button.setText((String) resultComboBox.getSelectedItem());
+                window.getTeamHandler(teamName).fileUpdate((String) resultComboBox.getSelectedItem(), id);
                 dispose();
                 window.setEnabled(true);
             }

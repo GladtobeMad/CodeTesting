@@ -1,3 +1,5 @@
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
@@ -109,6 +111,19 @@ public class ClientHandler implements Runnable {
         out.flush();
     }
 
+    public void fileUpdate(String status, long id) {
+        int index = window.getTeamRowIndex(teamName, id);
+        if (index != -1) {
+            JTable table = window.getTeamTable(teamName);
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            model.setValueAt(status, index, 2);
+            model.setValueAt("Done", index, 3);
+
+        }
+        out.println("FILEUPDATE " + id);
+        out.println(status);
+        out.flush();
+    }
 
     public String getTeamName() {
         return teamName;
