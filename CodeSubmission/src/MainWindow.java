@@ -58,7 +58,7 @@ public class MainWindow extends Frame {
                 out.flush();
                 String response = in.readLine();
                 if (response.equals("TEAMACCEPT")) {
-                    this.start();
+                    this.start(teamNameField.getText());
                     handler = new ServerHandler(socket, in, out, this);
                 } else {
                     JOptionPane.showMessageDialog(this, "Unable to connect to " + ipField.getText() + "! Please choose a different team name.", "Unable to Connect", JOptionPane.ERROR_MESSAGE);
@@ -143,7 +143,8 @@ public class MainWindow extends Frame {
         });
 
     }
-    public void start() {
+    public void start(String teamName) {
+        window.setTitle("Code Submission - " + teamName);
         window.remove(ipField);
         window.remove(teamNameField);
         window.remove(connectButton);

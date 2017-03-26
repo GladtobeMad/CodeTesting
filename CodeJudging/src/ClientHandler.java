@@ -107,7 +107,7 @@ public class ClientHandler implements Runnable {
         submissionStatuses.put(id, status);
         out.println("FILESUBMISSION " + file.getName() + " " + id);
         out.println(status);
-        window.addTeamSubmission(this.teamName, file, id, status); // TODO: DEAL WITH THIS
+        window.addTeamSubmission(this.teamName, file, id, status);
         out.flush();
     }
 

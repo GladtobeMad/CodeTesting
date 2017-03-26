@@ -24,7 +24,9 @@ public class MainWindow extends Frame {
 
     private JTabbedPane tabs;
     private JComponent leaderboardPanel, actionsPanel;
-    private JPanel problemAddPanel;
+    private JPanel problemAddPanel, buttonsPanel;
+    private JButton startButton, endButton;
+    private JLabel timeLabel;
     private JButton addProblemButton, selectInputButton, selectOutputButton, removeProblemButton;
     private JLabel inputFileLabel, outputFileLabel;
     private JTextField nameField;
@@ -34,6 +36,10 @@ public class MainWindow extends Frame {
     private FileDialog fileChooser = new FileDialog(this);
     private final MainWindow window = this;
     private String inputFile = null, outputFile = null;
+
+    private Timer timer;
+    private int time;
+    private long beginTime;
 
     private HashMap<String, ClientHandler> handlers = new HashMap<>();
     private HashMap<String, Integer> teamScores = new HashMap<>();
@@ -56,7 +62,23 @@ public class MainWindow extends Frame {
 
         tabs = new JTabbedPane();
 
+        tabs.addChangeListener(l -> {
+            int i = tabs.getSelectedIndex();
+            String title = tabs.getTitleAt(i);
+            if (title.startsWith("*")) {
+                tabs.setTitleAt(i, title.substring(1, title.length()));
+            }
+        });
+
         submissionPanel = new JTabbedPane();
+        submissionPanel.addChangeListener(l -> {
+            int i = submissionPanel.getSelectedIndex();
+            String title = submissionPanel.getTitleAt(i);
+            if (title.startsWith("*")) {
+                submissionPanel.setTitleAt(i, title.substring(1, title.length()));
+            }
+        });
+
         tabs.add("Submissions", submissionPanel);
 
         try {
@@ -97,7 +119,7 @@ public class MainWindow extends Frame {
 
         problemAddPanel = new JPanel();
         problemAddPanel.setLayout(new FlowLayout());
-        problemAddPanel.setPreferredSize(new Dimension(320, 120));
+        problemAddPanel.setPreferredSize(new Dimension(320, 480));
 
         inputFileLabel = new JLabel(" ");
         inputFileLabel.setPreferredSize(new Dimension(150, 30));
@@ -213,6 +235,53 @@ public class MainWindow extends Frame {
 
         actionsPanel.add(problemAddPanel, BorderLayout.LINE_START);
 
+        buttonsPanel = new JPanel();
+        buttonsPanel.setPreferredSize(new Dimension(320, 480));
+        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.PAGE_AXIS));
+
+        timeLabel = new JLabel(" ");
+        timeLabel.setHorizontalAlignment(JLabel.CENTER);
+        timeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        timeLabel.setPreferredSize(new Dimension(300, 50));
+        timeLabel.setFont(new Font(timeLabel.getFont().getName(), Font.PLAIN, 48));
+
+
+
+        buttonsPanel.add(timeLabel);
+        time = 0;
+
+        timer = new Timer(1000, e -> {
+            if (time == 0) {
+                beginTime = System.currentTimeMillis();
+            }
+            time++;
+            timeLabel.setText(String.format("%d:%02d", time/60, time%60));
+        });
+
+        startButton = new JButton("Start");
+        startButton.setPreferredSize(new Dimension(120, 30));
+        startButton.addActionListener(l -> {
+            timeLabel.setText(String.format("%d:%02d", time/60, time%60));
+            timer.start();
+            startButton.setEnabled(false);
+        });
+        endButton = new JButton("End");
+        endButton.setPreferredSize(new Dimension(120, 30));
+        endButton.addActionListener(l -> {
+            timer.stop();
+            endButton.setEnabled(false);
+            // TODO: INFORM CLIENTS ABOUT END
+        });
+        JPanel twoButtonsPanel = new JPanel();
+        twoButtonsPanel.setPreferredSize(new Dimension(320, 40));
+        twoButtonsPanel.setLayout(new FlowLayout());
+        twoButtonsPanel.add(startButton);
+        twoButtonsPanel.add(endButton);
+
+        buttonsPanel.add(twoButtonsPanel);
+
+        actionsPanel.add(buttonsPanel, BorderLayout.CENTER);
+
         tabs.add("Actions", actionsPanel);
 
         this.add(tabs);
@@ -248,7 +317,7 @@ public class MainWindow extends Frame {
 
 
     public boolean addTeam(String name, ClientHandler handler) {
-        if (!teamScores.containsKey(name) && !teamPenalties.containsKey(name) && !name.contains(" ")) {
+        if (!teamScores.containsKey(name) && !teamPenalties.containsKey(name) && !name.contains(" ") && !name.startsWith("*")) {
             teamScores.put(name, 0);
             teamPenalties.put(name, 0);
             handlers.put(name, handler);
@@ -346,9 +415,19 @@ public class MainWindow extends Frame {
         model.insertRow(0, new Object[]{file.getName(), time, status, "Test"});
         ArrayList<Long> list = teamSubmissionIds.get(team);
         list.add(0, id);
+        if (!tabs.getTitleAt(0).startsWith("*") && tabs.getSelectedIndex() != 0) {
+            tabs.setTitleAt(0, "*" + tabs.getTitleAt(0));
+        }
+
+        for (int i = 0; i < submissionPanel.getTabCount(); i++) {
+            if (!submissionPanel.getTitleAt(i).startsWith("*") && submissionPanel.getSelectedIndex() != i) {
+                if (submissionPanel.getTitleAt(i).equals(team)) {
+                    submissionPanel.setTitleAt(i, "*" + team);
+                }
+            }
+        }
         teamSubmissionIds.replace(team, list);
         JButton button = new JButton("Test");
-        //idToButton.put(id, button);
         button.addActionListener(l -> {
             if (this.getProblemList().size() > 0) {
                 new CodeTestingWindow(file, window, id, team);
@@ -420,5 +499,7 @@ public class MainWindow extends Frame {
     public int getTeamRowIndex(String team, long id) {
         return teamSubmissionIds.get(team).indexOf(id);
     }
+
+
 
 }
