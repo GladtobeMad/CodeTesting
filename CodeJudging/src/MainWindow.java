@@ -103,7 +103,7 @@ public class MainWindow extends Frame {
         model.addColumn("Score");
         model.addColumn("Penalty");
         leaderboardTable = new JTable(model);
-        leaderboardTable.setEnabled(false); // TODO: DEAL WITH THIS
+        leaderboardTable.setEnabled(false);
         leaderboardTable.getTableHeader().setEnabled(false);
         leaderboardPanel = new JScrollPane(leaderboardTable);
         tabs.add("Leaderboard", leaderboardPanel);
@@ -252,7 +252,7 @@ public class MainWindow extends Frame {
         buttonsPanel.add(timeLabel);
         time = 0;
 
-        timer = new Timer(1000, e -> {
+        timer = new Timer(60000, e -> {
             if (time == 0) {
                 beginTime = System.currentTimeMillis();
             }
@@ -302,7 +302,9 @@ public class MainWindow extends Frame {
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                // TODO: INFORM CLIENTS ABOUT CLOSING
+                for (ClientHandler handler : handlers.values()) {
+                    handler.endSession();
+                }
                 dispose();
                 System.exit(0);
             }

@@ -191,5 +191,6 @@ public class MainWindow extends Frame {
     public void endSession() {
         chooseFileButton.setEnabled(false);
         submitFileButton.setEnabled(false);
+        fileChooser.setVisible(false);
     }
 }
