@@ -334,9 +334,10 @@ public class MainWindow extends Frame {
         String time = new SimpleDateFormat("h:mm a").format(new Timestamp(id));
         model.insertRow(0, new Object[]{file.getName(), time, status, "Test"});
         JButton button = new JButton("Test");
+        //idToButton.put(id, button);
         button.addActionListener(l -> {
             if (this.getProblemList().size() > 0) {
-                new CodeTestingWindow(file, window);
+                new CodeTestingWindow(file, window, button);
                 this.setEnabled(false);
             } else {
                 JOptionPane.showMessageDialog(window, "Problem list is empty!", "Unable to test code", JOptionPane.ERROR_MESSAGE);
@@ -401,5 +402,6 @@ public class MainWindow extends Frame {
             }
         }
     }
+
 
 }

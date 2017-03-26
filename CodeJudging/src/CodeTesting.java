@@ -12,12 +12,14 @@ import java.util.concurrent.TimeUnit;
 public class CodeTesting {
 
     private File toTest, input, output;
-    private boolean compileError;
+    private boolean compileError, timeoutError;
+    private long timeout;
 
-    CodeTesting (File toTest, File input, File output) {
+    CodeTesting (File toTest, File input, File output, long timeout) {
         this.toTest = toTest;
         this.input = input;
         this.output = output;
+        this.timeout = timeout;
     }
 
     public String test() { // TODO: IMPROVE THIS. MAKE IT MORE INTERACTIVE
@@ -85,10 +87,9 @@ public class CodeTesting {
                 writer.newLine();
                 writer.flush();
             }
-            pro2.waitFor(5, TimeUnit.SECONDS); // TODO: FIX THIS TO A CUSTOM TIME LIMIT
+            pro2.waitFor(timeout, TimeUnit.MILLISECONDS);
             if (pro2.isAlive()) {
-                printWriter.println("Process is still running!");
-                printWriter.println("Ending process...");
+                timeoutError = true;
                 pro2.destroy();
             }
 
@@ -123,10 +124,12 @@ public class CodeTesting {
             }
 
 
+            printWriter.println("\nSucessfully finished testing.");
             if (compileError) {
-                printWriter.println("\nThe program resulted in a compile error.");
+                printWriter.println("The program resulted in a compile error.");
+            } else if (timeoutError) {
+                printWriter.println("The program resulted in a timeout error.");
             } else {
-                printWriter.println("\nSucessfully finished testing.");
                 printWriter.println("There was a total of " + errorCount + " errors.");
             }
         } catch (IOException e) {

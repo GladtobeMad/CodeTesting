@@ -11,18 +11,22 @@ public class CodeTestingWindow extends JFrame {
 
     private File toTest;
     private MainWindow window;
+    private JButton button;
+
     private JTextField timeoutField;
-    private JComboBox problemComboBox;
+    private JComboBox problemComboBox, resultComboBox;
     private JButton testButton, finishButton;
+    private JTextPane testResultPane;
 
 
 
-    CodeTestingWindow(File test, MainWindow w) {
+    CodeTestingWindow(File test, MainWindow w, JButton b) {
 
         super ("Testing file " + test.getName());
 
         this.toTest = test;
         this.window = w;
+        this.button = b;
 
         this.setLayout(new BorderLayout());
         JPanel panel = new JPanel();
@@ -46,7 +50,7 @@ public class CodeTestingWindow extends JFrame {
             problemComboBox.addItem(problem);
         }
 
-        String probableSelection = null; 
+        String probableSelection = null;
         for (String problem : window.getProblemList()) {
                 if (toTest.getName().endsWith(".java")) {
                     if (toTest.getName().substring(0, toTest.getName().length()-5).equals(problem)) {
@@ -66,10 +70,44 @@ public class CodeTestingWindow extends JFrame {
         testButton.setPreferredSize(new Dimension(150, 30));
         testButton.addActionListener(l -> {
             if (!problemComboBox.getSelectedItem().equals("")) {
-                File input = window.getInputFile((String) problemComboBox.getSelectedItem());
-                File output = window.getOutputFile((String) problemComboBox.getSelectedItem());
-                CodeTesting testing = new CodeTesting(toTest, input, output);
-                System.out.println(testing.test());
+                Integer timeout = null;
+                try {
+                    timeout = Integer.parseInt(timeoutField.getText());
+                } catch (NumberFormatException e) {
+
+                }
+                if (timeout != null) {
+                    File input = window.getInputFile((String) problemComboBox.getSelectedItem());
+                    File output = window.getOutputFile((String) problemComboBox.getSelectedItem());
+                    CodeTesting testing = new CodeTesting(toTest, input, output, timeout);
+                    testResultPane.setText(testing.test());
+                } else {
+                    JOptionPane.showMessageDialog(this, "Timeout must be an integer!", "Unable to test code", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        resultComboBox = new JComboBox();
+        resultComboBox.addItem("");
+        resultComboBox.addItem("Compile Error");
+        resultComboBox.addItem("Runtime Error");
+        resultComboBox.addItem("Timeout Error");
+        resultComboBox.addItem("Incorrect");
+        resultComboBox.addItem("Correct");
+        resultComboBox.setPreferredSize(new Dimension(150, 30));
+
+        testResultPane = new JTextPane();
+        testResultPane.setEditable(false);
+        JScrollPane textScroll = new JScrollPane(testResultPane);
+        textScroll.setPreferredSize(new Dimension(380, 200));
+
+        finishButton = new JButton("Finish");
+        finishButton.setPreferredSize(new Dimension(150, 30));
+        finishButton.addActionListener(l -> {
+            if (resultComboBox.getSelectedItem() != "") {
+                button.setText((String) resultComboBox.getSelectedItem());
+                dispose();
+                window.setEnabled(true);
             }
         });
 
@@ -78,11 +116,14 @@ public class CodeTestingWindow extends JFrame {
         panel.add(timeoutField);
         panel.add(problemComboBox);
         panel.add(testButton);
+        panel.add(textScroll);
+        panel.add(resultComboBox);
+        panel.add(finishButton);
 
         add(panel, BorderLayout.LINE_START);
 
         pack();
-        setSize(400, 300);
+        setSize(400, 400);
         setLocationRelativeTo(null);
         setVisible(true);
 
