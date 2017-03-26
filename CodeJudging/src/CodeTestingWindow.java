@@ -126,7 +126,7 @@ public class CodeTestingWindow extends JFrame {
                     if (solved == 0) {
                         penalty+=20;
                         solved = 1;
-                        penalty += ((id - window.getBeginTime())/1000);
+                        penalty += ((id - window.getBeginTime())/60000);
                         window.setProblemScore(teamName, problemName, solved);
                         window.setProblemPenalty(teamName, problemName, penalty);
                         window.addTeamScore(teamName, solved);
