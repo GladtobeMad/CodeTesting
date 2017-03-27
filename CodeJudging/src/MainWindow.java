@@ -85,7 +85,8 @@ public class MainWindow extends Frame {
         tabs.add("Submissions", submissionPanel);
 
         try {
-            source = new File (MainWindow.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath() + "/Judging_Session_" + System.currentTimeMillis());
+            File jar = new File (Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+            source = new File(jar.getParent() + "/Judging_Session_" + System.currentTimeMillis());
             if (!source.mkdir()) {
                 JOptionPane.showMessageDialog(window, "Unable to create a source folder. Please restart the application.", "Unable to create a source folder", JOptionPane.ERROR_MESSAGE);
             }
@@ -253,9 +254,6 @@ public class MainWindow extends Frame {
         time = 0;
 
         timer = new Timer(60000, e -> {
-            if (time == 0) {
-                beginTime = System.currentTimeMillis();
-            }
             time++;
             timeLabel.setText(String.format("%d:%02d", time/60, time%60));
         });
@@ -270,6 +268,7 @@ public class MainWindow extends Frame {
                 handler.startSession();
             }
             endButton.setEnabled(true);
+            beginTime = System.currentTimeMillis();
         });
         endButton = new JButton("End");
         endButton.setPreferredSize(new Dimension(120, 30));
